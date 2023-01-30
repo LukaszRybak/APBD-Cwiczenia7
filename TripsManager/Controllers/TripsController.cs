@@ -45,7 +45,7 @@ namespace TripsController.Controllers
             }
 
             return StatusCode(result.StatusCode, result.Message);
-            
+
         }
 
         [HttpPost("/api/trips/{idTrip}/clients")]
@@ -63,7 +63,7 @@ namespace TripsController.Controllers
             }
 
             return StatusCode(result.StatusCode, result.Message);
-            
+
         }
 
     }

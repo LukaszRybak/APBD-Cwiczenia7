@@ -28,7 +28,6 @@ namespace TripsManager.Models.DTO.Requests
         [Required(ErrorMessage = "Trip name is required")]
         public string TripName { get; set; }
 
-        [DateFormat(ErrorMessage = "Payment date must be in this format: MM/DD/YYYY")]
         public DateTime? PaymentDate { get; set; }
 
         public AssignClientToTripRequestDto(string firstName, string lastName, string email,
