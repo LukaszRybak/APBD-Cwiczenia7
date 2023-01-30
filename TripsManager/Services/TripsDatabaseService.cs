@@ -10,6 +10,7 @@ using TripsManager.Services;
 using TripsManager.Models.DTO.Responses;
 using Microsoft.EntityFrameworkCore;
 using System.Net.Sockets;
+using TripsManager.Models.DTO.Requests;
 
 namespace TripsManager.Services
 {
@@ -47,7 +48,7 @@ namespace TripsManager.Services
                 maxPeople = t.MaxPeople,
                 Countries = t.CountryTrips
                     .Select(cnt => countries.First(cn => cn.IdCountry == cnt.IdCountry))
-                    .Select(cn => new { Name = cn.Name}),
+                    .Select(cn => new { Name = cn.Name }),
                 Clients = t.ClientTrips
                     .Select(clt => clients.First(cl => cl.IdClient == clt.IdClient))
                     .Select(cl => new { FirstName = cl.FirstName, LastName = cl.LastName })
@@ -55,7 +56,7 @@ namespace TripsManager.Services
                 .OrderByDescending(t => t.dateFrom)
                 .ToList();
 
-            return new DatabaseResponseDto(200,"", output);
+            return new DatabaseResponseDto(200, "", output);
         }
 
         public async Task<DatabaseResponseDto> DeleteClientAsync(int idClient)
@@ -66,7 +67,6 @@ namespace TripsManager.Services
             {
                 return new DatabaseResponseDto(404, "Client with given Id doesn't exist", null);
             }
-
             var clientTrips = _context.ClientTrips.Where(ct => ct.IdClient == idClient).ToList();
 
             if (clientTrips.Any())
@@ -80,6 +80,48 @@ namespace TripsManager.Services
             return new DatabaseResponseDto(200, "Client data removed succesfully", null);
         }
 
+        public async Task<DatabaseResponseDto> AssignClientToTripAsync(int idTrip, AssignClientToTripRequestDto assignClientToTripRequestDto)
+        {
+            var client = await _context.Clients.Where(cl => cl.Pesel == assignClientToTripRequestDto.Pesel)
+                                               .SingleOrDefaultAsync();
+            if (client == null)
+            {
+                client = new Client(
+                                assignClientToTripRequestDto.FirstName,
+                                assignClientToTripRequestDto.LastName,
+                                assignClientToTripRequestDto.Email,
+                                assignClientToTripRequestDto.Telephone,
+                                assignClientToTripRequestDto.Pesel);
+                _context.Clients.Add(client);
+            }
+            _context.SaveChanges();
+
+            var existingClientTrip = await _context.ClientTrips.Where(ct => ct.IdClient == client.IdClient && ct.IdTrip == assignClientToTripRequestDto.IdTrip)
+                                                               .SingleOrDefaultAsync();
+            if (existingClientTrip != null)
+            {
+                return new DatabaseResponseDto(400, "Client is already assigned to this trip", null);
+            }
+
+            var trip = await _context.Trips.Where(t => t.IdTrip == assignClientToTripRequestDto.IdTrip)
+                                           .SingleOrDefaultAsync();
+            if (trip == null)
+            {
+                return new DatabaseResponseDto(404, "Trip not found", null);
+            }
+
+            var newClientTrip = new ClientTrip(
+                                        client.IdClient,
+                                        trip.IdTrip,
+                                        DateTime.Now,
+                                        assignClientToTripRequestDto.PaymentDate
+                                        );
+
+            _context.ClientTrips.Add(newClientTrip);
+            _context.SaveChanges();
+
+            return new DatabaseResponseDto(200, "Client added to trip sucessfully", null);
+        }
 
     }
 }

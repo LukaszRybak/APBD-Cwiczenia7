@@ -16,4 +16,12 @@ public partial class ClientTrip
     public virtual Client IdClientNavigation { get; set; } = null!;
 
     public virtual Trip IdTripNavigation { get; set; } = null!;
+
+    public ClientTrip(int idClient, int idTrip, DateTime registeredAt, DateTime? paymentDate)
+    {
+        IdClient = idClient;
+        IdTrip = idTrip;
+        RegisteredAt = registeredAt;
+        PaymentDate = paymentDate;
+    }
 }

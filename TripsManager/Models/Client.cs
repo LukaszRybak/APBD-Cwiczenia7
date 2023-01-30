@@ -18,4 +18,14 @@ public partial class Client
     public string Pesel { get; set; } = null!;
 
     public virtual ICollection<ClientTrip> ClientTrips { get; } = new List<ClientTrip>();
+
+
+    public Client(string firstName, string lastName, string email, string telephone, string pesel)
+    {
+        FirstName = firstName;
+        LastName = lastName;
+        Email = email;
+        Telephone = telephone;
+        Pesel = pesel;
+    }
 }

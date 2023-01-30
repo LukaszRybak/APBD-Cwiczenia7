@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Microsoft.Data.SqlClient;
 using TripsManager.Models.DTO.Responses;
+using Microsoft.EntityFrameworkCore;
+using TripsManager.Models.DTO.Requests;
+using System.Net.Sockets;
 
 namespace TripsController.Controllers
 {
@@ -35,6 +38,24 @@ namespace TripsController.Controllers
             try
             {
                 result = await _databaseService.DeleteClientAsync(idClient);
+            }
+            catch (SqlException exc)
+            {
+                return StatusCode(500, exc.Message);
+            }
+
+            return StatusCode(result.StatusCode, result.Message);
+            
+        }
+
+        [HttpPost("/api/trips/{idTrip}/clients")]
+        public async Task<IActionResult> AssignClientToTripAsync(int idTrip, [FromBody] AssignClientToTripRequestDto assignClientToTripRequestDto)
+        {
+
+            DatabaseResponseDto result;
+            try
+            {
+                result = await _databaseService.AssignClientToTripAsync(idTrip, assignClientToTripRequestDto);
             }
             catch (SqlException exc)
             {
